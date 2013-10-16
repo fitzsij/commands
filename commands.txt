@@ -12,7 +12,10 @@ atrcxb1361(root) #: cat /etc/hosts
 
 
 Give sub dirs./files size in current dir:
-for i in `ls`;do du -h -d -s $i;done)  
+for i in `ls`;do du -h -d -s $i;done) 
+
+Search folder (recursively?):
+find . | xargs grep *.html
 
 
 ==============================================================================
