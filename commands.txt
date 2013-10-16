@@ -1,4 +1,11 @@
+looking for Eniq processes on solaris:
 ps -ef | grep Eniq
 
+Restarting mysql:
 svcadm restart mysql
 
+cat LLSV files from yesterday in this dir:
+find . -mtime -1 -ls | grep LLSV | xargs cat
+
+Lookup the hosts on coordination server:
+atrcxb1361(root) #: cat /etc/hosts
