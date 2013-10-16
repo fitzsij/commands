@@ -9,3 +9,97 @@ find . -mtime -1 -ls | grep LLSV | xargs cat
 
 Lookup the hosts on coordination server:
 atrcxb1361(root) #: cat /etc/hosts
+
+
+Give sub dirs./files size in current dir:
+for i in `ls`;do du -h -d -s $i;done)  
+
+
+==============================================================================
+
+
+Moving a filesystem mounted by zfs:
+
+
+So as the subject suggests your backup filesystem was being mounted into the /backup directory by ZFS, a Sun (Solaris) filesystem and volume manager.
+Here are a few commands to use it:
+
+
+          zfs list
+            
+                        Lists the filesystems being mounted by zfs along with their current size and mountpoint
+
+          zfs get mounted <filesystem name>
+
+                        Displays whether the filesystem is currently mounted or not
+
+          zfs get mountpoint <filesystem name>
+
+                        Displays the mountpoint for the filesystem
+
+          zfs set mountpoint=<mountpoint> <filesystem name>
+
+                        Sets the given mountpoint for the given filesystem
+
+          zfs mount -a
+
+                        Mounts all filesystems being mounted by zfs to their respective mountpoints
+
+          zfs mount
+
+                        Similar to zfs list but only displays filesystem names and their mountpoints
+
+
+So what I did with your “backup” filesystem:
+
+                zfs set mountpoint=/export backup
+                zfs mount –a
+
+Simple as that really!
+
+Notes:
+1)	The mountpoint must be empty before trying to mount a filesystem in it.
+2)	If you get an error saying “mountpoint or dataset is busy” it is most likely because your current working directory is the mountpoint. Just cd out of it and try again with zfs mount –a
+a.	If the error persists then remove the directory you are trying to mount to and re-create it, try again with zfs mount –a
+
+
+==============================================================================
+
+
+NAS:
+
+I had a look at the problem; it appears that there is something strange with some of the FS's that will not allow the MZ blade to export those FS's. I would suggest removing all FS's for this deployment first. Can your team assist with this? CI would like a procedure. 
+Here is how I would do it, but it's not tested. can your team put together a procedure and verify ti with CI? Or seek assistance from Infra if needed. 
+
+Logon as master:  
+storage fs list should list FS 
+The NAS is shared.  So we are only interested in the storage pool that this deployment is using
+
+nfs share show will list all shares 
+
+storage rollback cache list will show your rollback cache. Note the size. 
+
+storage pool list will show the storage pools on this server. Identify the one coresponding to this Events deployment. 
+
+All of the procedure below applies to the relevant storage pool only: 
+
+I would suggest we remove all shares for that Storage pool
+nfs share delete <share name>
+
+Delete FS for that pool
+storage fs destroy <FS name>
+
+Manish, do you think it's wise to also remove the pool and start fresh with a new one?
+If so the rollback will need to be destroyed first 
+
+storage rollback cache destroy <cache name>
+And finally remove the pool
+storage pool destroy <pool name>
+
+After that they should be created in reverse order. 
+storage pool create <pool name>
+
+storage rollback cache create <name> <cache size>   - can you check this it should be as per SFS documentation? 
+
+
+==============================================================================
