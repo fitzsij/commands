@@ -1,0 +1,4 @@
+ps -ef | grep Eniq
+
+svcadm restart mysql
+
